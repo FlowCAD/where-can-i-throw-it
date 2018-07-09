@@ -104,7 +104,7 @@ var fromPointFeatureToLayer = function (featuresCreated, openDataName, openDataP
             }
         }
     );
-    lcontrol.addOverlay(myData, openDataName);
+    addingData(myData, openDataName);
 };
 
 var fromFeatureToFeatureType = function (featuresCreated, typeOfGeomArray, openDataName, openDataProperties) {
