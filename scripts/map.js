@@ -10,20 +10,33 @@ var northEastBound = L.latLng(43.68, 1.68),
 
 // Background layers
 var mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZmxvcmlhbmNhZG96IiwiYSI6ImNqMGkzN3ZzYzAwM3MzMm80MDZ6eGQ2bmwifQ.BMmvDcBnXoWT8waOnIKNBg',
-osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+    'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+    mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZmxvcmlhbmNhZG96IiwiYSI6ImNqMGkzN3ZzYzAwM3MzMm80MDZ6eGQ2bmwifQ.BMmvDcBnXoWT8waOnIKNBg',
+    osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
-var streets = L.tileLayer(mbUrl, {id: 'mapbox.streets', attribution: mbAttr}),
-    osm = L.tileLayer(osmUrl, {attribution: osmAttr});
+var streets = L.tileLayer(mbUrl, {
+        id: 'mapbox.streets',
+        attribution: mbAttr
+    }),
+    osm = L.tileLayer(osmUrl, {
+        attribution: osmAttr
+    });
 
 // Styles
-var trashMarkerSymbol = L.AwesomeMarkers.icon({icon: ' fa fa-trash', prefix: 'fa', color: 'orange', iconColor: 'white'}),
-    recycleMarkerSymbol = L.AwesomeMarkers.icon({icon: ' fa fa-recycle', prefix: 'fa', color: 'green', iconColor: 'white'}),
-    glassMarkerSymbol = L.AwesomeMarkers.icon({icon: ' fa fa-glass', prefix: 'fa', color: 'cadetblue', iconColor: 'white'}),
-    hereMarkerSymbol = L.AwesomeMarkers.icon({icon: ' fa fa-female', prefix: 'fa', color: 'darkpurple', iconColor: 'white'});
+var recycleMarkerSymbol = L.AwesomeMarkers.icon({
+        icon: ' fa fa-recycle',
+        prefix: 'fa',
+        color: 'green',
+        iconColor: 'white'
+    }),
+    hereMarkerSymbol = L.AwesomeMarkers.icon({
+        icon: ' fa fa-female',
+        prefix: 'fa',
+        color: 'darkpurple',
+        iconColor: 'white'
+    });
 
 //--------------------------------------------------------------------------------------------//
 //-------------------------------------MAP INITIALIZATION-------------------------------------//
@@ -41,7 +54,9 @@ mymap.on("load", function () {
 // Geolocation of the user and initialization of the map view
 function onLocationFound(e) {
     var radius = e.accuracy / 2;
-    L.marker(e.latlng, {icon: hereMarkerSymbol}).addTo(mymap)
+    L.marker(e.latlng, {
+            icon: hereMarkerSymbol
+        }).addTo(mymap)
         .bindPopup("Vous êtes ici ! (à " + Math.round(radius) + " mètres près)").openPopup();
     L.circle(e.latlng, radius).addTo(mymap);
 }
@@ -52,7 +67,10 @@ function onLocationError(e) {
 
 mymap.on('locationfound', onLocationFound);
 mymap.on('locationerror', onLocationError);
-mymap.locate({setView: true, maxZoom: 16}).setMaxBounds(bounds);
+mymap.locate({
+    setView: true,
+    maxZoom: 16
+}).setMaxBounds(bounds);
 mymap.options.minZoom = 12;
 
 // Basemaps for control
@@ -69,12 +87,6 @@ var lcontrol = L.control.layers(baseMaps, overlayMaps).addTo(mymap);
 
 //--------------------------------------------------------------------------------------------//
 //--------------------------------------OTHER FUNCTIONS---------------------------------------//
-// Removing data
-var removeData = function (layerToRemove) {
-    mymap.removeLayer(layerToRemove);
-    lcontrol.removeLayer(layerToRemove);
-};
-
 // Adding data
 var addingData = function (layerToAdd, layerNameToAdd) {
     mymap.addLayer(layerToAdd);
@@ -86,16 +98,18 @@ var addingData = function (layerToAdd, layerNameToAdd) {
 //Go searching for openData from Toulouse Metropole
 var fromPointFeatureToLayer = function (featuresCreated, openDataName, openDataProperties) {
     var myData = L.geoJson(
-        featuresCreated,
-        {
+        featuresCreated, {
             pointToLayer: function (feature, latlng) {
-                return new L.marker((latlng), {icon: recycleMarkerSymbol});
+                return new L.marker((latlng), {
+                    icon: recycleMarkerSymbol
+                });
             },
             onEachFeature: function (feature, layer) {
-                var featureAttributes = "", prop, attr;
+                var featureAttributes = "",
+                    prop, attr;
                 for (prop in openDataProperties) {
                     for (attr in feature.properties) {
-                        if (typeof(feature.properties[attr]) !== "object" && attr === openDataProperties[prop].toLowerCase()) {
+                        if (typeof (feature.properties[attr]) !== "object" && attr === openDataProperties[prop].toLowerCase()) {
                             featureAttributes += openDataProperties[prop] + " : " + feature.properties[attr] + "<br />";
                         }
                     }
@@ -104,7 +118,7 @@ var fromPointFeatureToLayer = function (featuresCreated, openDataName, openDataP
             }
         }
     );
-    lcontrol.addOverlay(myData, openDataName);
+    addingData(myData, openDataName);
 };
 
 var fromFeatureToFeatureType = function (featuresCreated, typeOfGeomArray, openDataName, openDataProperties) {
@@ -136,8 +150,7 @@ var fromXhrToFeature = function (myResponse, openDataName, openDataProperties) {
     for (i = 0; i < myResponse.records.length; i += 1) {
         var typeOfGeom = myResponse.records[i].fields.geo_shape.type,
             theGeom = myResponse.records[i].fields.geo_shape.coordinates,
-            featureObject = new FeatureConstructor(
-                {
+            featureObject = new FeatureConstructor({
                     type: typeOfGeom,
                     coordinates: theGeom
                 },
@@ -172,7 +185,6 @@ var myXHRSender = function (openData) {
 
 var openDataRecupEmbal = [
     'https://data.toulouse-metropole.fr/api/records/1.0/search/?dataset=recup-emballage&geofilter.distance=43.60281%2C1.44736%2C2000&rows=100',
-    "Points de collecte",
-    ["Adresse"]
+    "Points de collecte", ["Adresse"]
 ];
 myXHRSender(openDataRecupEmbal);
