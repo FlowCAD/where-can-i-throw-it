@@ -31,6 +31,12 @@ var recycleMarkerSymbol = L.AwesomeMarkers.icon({
         color: 'green',
         iconColor: 'white'
     }),
+    recycleGlassMarkerSymbol = L.AwesomeMarkers.icon({
+        icon: ' fa fa-recycle',
+        prefix: 'fa',
+        color: 'blue',
+        iconColor: 'white'
+    }),
     hereMarkerSymbol = L.AwesomeMarkers.icon({
         icon: ' fa fa-female',
         prefix: 'fa',
@@ -53,12 +59,14 @@ mymap.on("load", function () {
 //---------------------------------------MAP PROPERTIES---------------------------------------//
 // Geolocation of the user and initialization of the map view
 function onLocationFound(e) {
-    var radius = e.accuracy / 2;
-    L.marker(e.latlng, {
+    var radius = e.accuracy / 2,
+        myPosition = e.latlng;
+    L.marker(myPosition, {
             icon: hereMarkerSymbol
         }).addTo(mymap)
         .bindPopup("Vous êtes ici ! (à " + Math.round(radius) + " mètres près)").openPopup();
-    L.circle(e.latlng, radius).addTo(mymap);
+    L.circle(myPosition, radius).addTo(mymap);
+    getProximityData(myPosition);
 }
 
 function onLocationError(e) {
@@ -72,6 +80,12 @@ mymap.locate({
     maxZoom: 16
 }).setMaxBounds(bounds);
 mymap.options.minZoom = 12;
+
+function getProximityData(myPosition) {
+    var dataUrl = 'https://data.toulouse-metropole.fr/api/records/1.0/search/?dataset=recup-verre&geofilter.distance=' + myPosition.lat +  ',' + myPosition.lng + ',1500&rows=100';
+    openDataRecupVerre = [dataUrl, "Points de collecte Verre", ["Adresse", "dmt_type"]];
+    myXHRSender(openDataRecupVerre);
+}
 
 // Basemaps for control
 var baseMaps = {
@@ -100,9 +114,15 @@ var fromPointFeatureToLayer = function (featuresCreated, openDataName, openDataP
     var myData = L.geoJson(
         featuresCreated, {
             pointToLayer: function (feature, latlng) {
-                return new L.marker((latlng), {
-                    icon: recycleMarkerSymbol
-                });
+                if (feature.properties.dmt_type === "Verre") {
+                    return new L.marker((latlng), {
+                        icon: recycleGlassMarkerSymbol
+                    });
+                } else {
+                    return new L.marker((latlng), {
+                        icon: recycleMarkerSymbol
+                    });                    
+                }
             },
             onEachFeature: function (feature, layer) {
                 var featureAttributes = "",
@@ -185,6 +205,6 @@ var myXHRSender = function (openData) {
 
 var openDataRecupEmbal = [
     'https://data.toulouse-metropole.fr/api/records/1.0/search/?dataset=recup-emballage&geofilter.distance=43.60281%2C1.44736%2C2000&rows=100',
-    "Points de collecte", ["Adresse"]
+    "Points de collecte Carton / Plastique", ["Adresse", "dmt_type"]
 ];
 myXHRSender(openDataRecupEmbal);
